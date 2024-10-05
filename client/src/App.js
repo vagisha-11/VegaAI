@@ -1,17 +1,14 @@
 import React, { useState, useRef } from "react";
-import CodeBlock from "./Codeblock"; // Ensure this component handles language highlighting
+import CodeBlock from "./Codeblock";
 import { marked } from "marked";
-import "prismjs/components/prism-javascript"; // JavaScript
-import "prismjs/components/prism-python";     // Python
-import "prismjs/components/prism-java";       // Java
-import "prismjs/components/prism-c";          // C
-import "prismjs/components/prism-cpp"; 
+import "prismjs/components/prism-javascript";
 import "./App.css";
 
 function App() {
   const [question, setQuestion] = useState("");
   const [conversation, setConversation] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [file, setFile] = useState(null);
   const chatEndRef = useRef(null);
 
   const backendUrl =
@@ -24,13 +21,16 @@ function App() {
       { role: "user", content: trimmedQuestion },
     ]);
 
+    const formData = new FormData();
+    formData.append("question", trimmedQuestion);
+    if (file) {
+      formData.append("file", file);
+    }
+
     try {
       const response = await fetch(backendUrl, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ question: trimmedQuestion }),
+        body: formData,
       });
 
       if (!response.ok) {
@@ -52,6 +52,7 @@ function App() {
     } finally {
       setLoading(false);
       setQuestion("");
+      setFile(null); // Reset file after sending
       chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   };
@@ -65,68 +66,24 @@ function App() {
     }
   };
 
-  // Function to extract code blocks and text
-  const extractCodeBlocks = (text) => {
-    const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g; // Updated regex to capture language
-    const parts = [];
-    let lastIndex = 0;
-
-    let match;
-    while ((match = codeBlockRegex.exec(text)) !== null) {
-      if (match.index > lastIndex) {
-        parts.push({
-          type: "text",
-          content: text.slice(lastIndex, match.index),
-        });
-      }
-      parts.push({ type: "code", content: match[2], language: match[1] || "" }); // Capture code content and language
-      lastIndex = codeBlockRegex.lastIndex;
-    }
-
-    if (lastIndex < text.length) {
-      parts.push({ type: "text", content: text.slice(lastIndex) });
-    }
-
-    return parts;
+  const handleFileChange = (e) => {
+    setFile(e.target.files[0]);
   };
 
   return (
     <div className="container">
       <h1>Chat with me</h1>
 
-      {/* Chat container */}
       <div className="chat-container">
-        {conversation.map((msg, index) => {
-          const parts = extractCodeBlocks(msg.content);
-          return (
-            <div key={index} className={`message ${msg.role}`}>
-              <strong>{msg.role === "user" ? "You" : "Gemini"}:</strong>
-              {parts.map((part, i) => {
-                if (part.type === "code") {
-                  return (
-                    <CodeBlock
-                      key={i}
-                      code={part.content}
-                      language={part.language} // Use captured language
-                    />
-                  );
-                } else {
-                  return (
-                    <div
-                      key={i}
-                      className="explanation"
-                      dangerouslySetInnerHTML={{ __html: marked(part.content) }}
-                    />
-                  );
-                }
-              })}
-            </div>
-          );
-        })}
+        {conversation.map((msg, index) => (
+          <div key={index} className={`message ${msg.role}`}>
+            <strong>{msg.role === "user" ? "You" : "Gemini"}:</strong>
+            <div dangerouslySetInnerHTML={{ __html: marked(msg.content) }} />
+          </div>
+        ))}
         <div ref={chatEndRef} />
       </div>
 
-      {/* Input section */}
       <textarea
         className="textarea"
         rows="4"
@@ -134,6 +91,8 @@ function App() {
         value={question}
         onChange={(e) => setQuestion(e.target.value)}
       />
+      <br />
+      <input type="file" onChange={handleFileChange} />
       <br />
       <button
         className="button"

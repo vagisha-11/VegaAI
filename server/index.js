@@ -1,6 +1,8 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
+const multer = require("multer");
+const path = require("path");
 require("dotenv").config();
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
@@ -10,6 +12,25 @@ const geminiApiKey = process.env.GEMINI_API_KEY;
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
+
+// Setup multer for file uploads
+const storage = multer.memoryStorage(); // Store files in memory
+const upload = multer({
+  storage,
+  limits: { fileSize: 1 * 1024 * 1024 }, // Limit file size to 1MB
+  fileFilter: (req, file, cb) => {
+    const filetypes = /txt|json|csv/; // Allowed file types
+    const extname = filetypes.test(
+      path.extname(file.originalname).toLowerCase()
+    );
+    const mimetype = filetypes.test(file.mimetype);
+
+    if (extname && mimetype) {
+      return cb(null, true);
+    }
+    cb("Error: File type not supported!");
+  },
+});
 
 // Initialize Google Generative AI with the API key
 const genAI = new GoogleGenerativeAI(geminiApiKey);
@@ -27,63 +48,41 @@ const generationConfig = {
 };
 
 // Function to generate a response for a single question
-const generateResponse = async (question, res) => {
+const generateResponse = async (question, fileContent, res) => {
   try {
     const chatSession = model.startChat({
       generationConfig,
       history: [],
     });
 
-    // Stream the response
-    const streamResponse = (message) => {
-      res.write(`data: ${JSON.stringify({ message })}\n\n`);
-    };
+    // Process the file content if it exists
+    const message = fileContent ? `${fileContent}\n${question}` : question;
 
-    // Simulating progressive streaming
-    const responseChunks = [
-      "Generating response...",
-      "Thinking...",
-      "Almost there...",
-      "Here is the final response:",
-    ];
-
-    // Sending each chunk progressively
-    for (const chunk of responseChunks) {
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate delay for streaming
-      streamResponse(chunk);
-    }
-
-    const result = await chatSession.sendMessage(question); // Send the user's message to the model
-    streamResponse(result.response.text());
-
-    // End the response stream
-    res.end();
+    const result = await chatSession.sendMessage(message);
+    res.json({ answer: result.response.text() });
   } catch (error) {
     console.error("Error:", error);
-    res.write(
-      `data: ${JSON.stringify({
-        message: "An error occurred while processing your request.",
-      })}\n\n`
-    );
-    res.end();
+    res.json({ answer: "An error occurred while processing your request." });
   }
 };
 
-// POST endpoint to handle chat
-app.post("/", async (req, res) => {
+// POST endpoint to handle chat with file upload
+app.post("/", upload.single("file"), async (req, res) => {
   const userQuestion = req.body.question; // Extract the user's question from the request body
+  const file = req.file; // Extract the uploaded file
 
   if (!userQuestion) {
     return res.status(400).json({ error: "Question is required." });
   }
 
-  // Set headers for streaming
-  res.setHeader("Content-Type", "text/event-stream");
-  res.setHeader("Cache-Control", "no-cache");
-  res.setHeader("Connection", "keep-alive");
+  // Read file content if available
+  let fileContent = "";
+  if (file) {
+    fileContent = file.buffer.toString(); // Convert buffer to string (for example, a text file)
+  }
 
   try {
-    await generateResponse(userQuestion, res); // Pass the response object for streaming
+    await generateResponse(userQuestion, fileContent, res); // Pass the file content to the response generator
   } catch (error) {
     console.error("Error:", error);
     res
