@@ -1,13 +1,13 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+import React from "react";
+import ReactDOM from "react-dom/client"; // Import the modern createRoot
+import "./index.css";
+import MainApp from "./App"; // Ensure you're importing MainApp
+import reportWebVitals from "./reportWebVitals";
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
+const root = ReactDOM.createRoot(document.getElementById("root")); // Use createRoot to create the root
 root.render(
   <React.StrictMode>
-    <App />
+    <MainApp /> 
   </React.StrictMode>
 );
 
