@@ -17,6 +17,7 @@ function App() {
 	const [loading, setLoading] = useState(false);
 	const [file, setFile] = useState(null);
 	const [isTTSActive, setIsTTSActive] = useState(false); // Track if TTS is active
+	const [error, setError] = useState('');
 	const fileInputRef = useRef(null);
 	const chatEndRef = useRef(null);
 
@@ -104,7 +105,38 @@ function App() {
 	};
 
 	const handleFileChange = (e) => {
-		setFile(e.target.files[0]);
+		const uploadedFile = e.target.files[0];
+		const validTypes = [
+			'text/plain',
+			'text/csv',
+			'application/json',
+			'application/pdf',
+		];
+		const maxSizeInMB = 20;
+
+		if (uploadedFile) {
+			if (!validTypes.includes(uploadedFile.type)) {
+				setFile(null);
+				setError('File type not supported. Please upload a valid file.');
+				if (fileInputRef.current) {
+					fileInputRef.current.value = ''; // Clear the file input field
+				}
+				return;
+			}
+
+			if (uploadedFile.size > maxSizeInMB * 1024 * 1024) {
+				// Convert MB to bytes
+				setFile(null);
+				setError(`File size should not exceed ${maxSizeInMB} MB.`);
+				if (fileInputRef.current) {
+					fileInputRef.current.value = ''; // Clear the file input field
+				}
+				return;
+			}
+
+			setFile(uploadedFile);
+			setError(''); // Clear any previous error
+		}
 	};
 
 	const extractCodeBlocks = (text) => {
@@ -194,6 +226,8 @@ function App() {
 			<br />
 
 			<input type='file' onChange={handleFileChange} ref={fileInputRef} />
+
+			{error && <div className='error'>{error}</div>}
 
 			<div className='voice-controls'>
 				<button onClick={startListening} disabled={loading || listening}>
