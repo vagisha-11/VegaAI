@@ -2,9 +2,10 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const multer = require("multer");
-const path = require("path");
+const fs = require("fs").promises;
 require("dotenv").config();
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+const { GoogleAIFileManager } = require("@google/generative-ai/server");
 
 const geminiApiKey = process.env.GEMINI_API_KEY;
 
@@ -12,28 +13,35 @@ const geminiApiKey = process.env.GEMINI_API_KEY;
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
-// Setup multer for file uploads
-const storage = multer.memoryStorage(); // Store files in memory
+// Multer configuration for file type validation and size limits
 const upload = multer({
-  storage,
-  limits: { fileSize: 1 * 1024 * 1024 }, // Limit file size to 1MB
+  dest: "uploads/",
+  limits: { fileSize: 50 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
-    const filetypes = /txt|json|csv/; // Allowed file types
-    const extname = filetypes.test(
-      path.extname(file.originalname).toLowerCase()
+    const fileTypes = /text|csv|json|pdf/;
+    const mimeTypes = [
+      "text/plain",
+      "text/csv",
+      "application/json",
+      "application/pdf",
+    ];
+    const mimeType = mimeTypes.includes(file.mimetype);
+    const extname = fileTypes.test(
+      file.originalname.split(".").pop().toLowerCase()
     );
-    const mimetype = filetypes.test(file.mimetype);
 
-    if (extname && mimetype) {
+    if (mimeType && extname) {
       return cb(null, true);
     }
-    cb("Error: File type not supported!");
+    cb(new Error("File type not supported"));
   },
 });
 
 // Initialize Google Generative AI with the API key
 const genAI = new GoogleGenerativeAI(geminiApiKey);
+const fileManager = new GoogleAIFileManager(geminiApiKey);
 const model = genAI.getGenerativeModel({
   model: "gemini-1.5-flash",
 });
@@ -48,46 +56,57 @@ const generationConfig = {
 };
 
 // Function to generate a response for a single question
-const generateResponse = async (question, fileContent, res) => {
+const generateResponse = async (question, fileContent) => {
   try {
     const chatSession = model.startChat({
       generationConfig,
       history: [],
     });
 
-    // Process the file content if it exists
     const message = fileContent ? `${fileContent}\n${question}` : question;
 
     const result = await chatSession.sendMessage(message);
-    res.json({ answer: result.response.text() });
+    return result.response.text();
   } catch (error) {
     console.error("Error:", error);
-    res.json({ answer: "An error occurred while processing your request." });
+    return "An error occurred while processing your request.";
   }
 };
 
-// POST endpoint to handle chat with file upload
+// POST endpoint to handle chat
 app.post("/", upload.single("file"), async (req, res) => {
-  const userQuestion = req.body.question; // Extract the user's question from the request body
-  const file = req.file; // Extract the uploaded file
+  const userQuestion = req.body.question;
+  const file = req.file;
 
-  if (!userQuestion) {
-    return res.status(400).json({ error: "Question is required." });
-  }
-
-  // Read file content if available
   let fileContent = "";
   if (file) {
-    fileContent = file.buffer.toString(); // Convert buffer to string (for example, a text file)
+    try {
+      fileContent = await fs.readFile(file.path, "utf-8");
+      await fs.unlink(file.path); // Clean up the uploaded file
+    } catch (error) {
+      console.error("File read error:", error);
+      return res.status(500).json({ error: "File read failed." });
+    }
   }
-
   try {
-    await generateResponse(userQuestion, fileContent, res); // Pass the file content to the response generator
+    const responseText = await generateResponse(userQuestion, fileContent);
+    res.json({ answer: responseText });
   } catch (error) {
     console.error("Error:", error);
     res
       .status(500)
       .json({ error: "An error occurred while processing your request." });
+  }
+});
+
+// Error handling middleware for multer
+app.use((err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    res.status(400).json({ error: `Multer error: ${err.message}` });
+  } else if (err) {
+    res.status(400).json({ error: `Error: ${err.message}` });
+  } else {
+    next();
   }
 });
 
