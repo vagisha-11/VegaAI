@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-const bcrypt = require('bcryptjs');
 
 const userSchema = new Schema(
 	{
@@ -12,13 +11,13 @@ const userSchema = new Schema(
 		email: {
 			type: String,
 			required: [true, 'Email is required'],
-			unique: true, // Ensures no duplicate email addresses
-			lowercase: true, // Converts email to lowercase before storing
-			trim: true, // Removes whitespace from beginning and end
+			unique: true,
+			lowercase: true,
+			trim: true,
 			match: [
 				/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
 				'Please enter a valid email address',
-			], // Regular expression for basic email validation
+			],
 		},
 		password: {
 			type: String,

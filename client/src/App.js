@@ -1,9 +1,9 @@
 // App.js
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Home from './pages/Home'; // Import the Home component
+import Home from './pages/Home';
 import Login from './pages/Login';
-import Signup from './pages/Signup';
+import Register from './pages/Register';
 import Logout from './pages/Logout';
 
 function App() {
@@ -11,9 +11,9 @@ function App() {
 		<Router>
 			<Routes>
 				<Route path='/' exact element={<Home />} />
-				<Route path='/signup' element={<Signup />} />
-				<Route path='/login' element={<Login />} />
-				<Route path='/logout' element={<Logout />} />
+				<Route path='/login' exact element={<Login />} />
+				<Route path='/register' exact element={<Register />} />
+				<Route path='/logout' exact element={<Logout />} />
 			</Routes>
 		</Router>
 	);

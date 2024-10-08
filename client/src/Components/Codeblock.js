@@ -1,24 +1,23 @@
 import React, { useEffect, useRef } from 'react';
 import Prism from 'prismjs';
 import ClipboardJS from 'clipboard';
-import 'prismjs/themes/prism-tomorrow.css'; // Import Prism.js theme CSS
-import '../css/Codeblock.css'; // Custom styles
+import 'prismjs/themes/prism-tomorrow.css';
+import '../css/Codeblock.css'; //Styling codeblocs using codeblock component
 
 const CodeBlock = ({ code, language }) => {
 	const codeRef = useRef(null);
 
 	useEffect(() => {
-		Prism.highlightAll(); // Highlight the code block
+		Prism.highlightAll(); // Highlighting
 
-		// Initialize ClipboardJS
 		const clipboard = new ClipboardJS('.copy-btn', {
 			target: () => codeRef.current,
 		});
 
 		return () => {
-			clipboard.destroy(); // Clean up ClipboardJS instance
+			clipboard.destroy();
 		};
-	}, [code, language]); // Re-run when code or language changes
+	}, [code, language]);
 
 	return (
 		<div className='code-block'>

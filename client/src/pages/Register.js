@@ -1,49 +1,66 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const Login = () => {
+const Register = () => {
 	const [formData, setFormData] = useState({
+		username: '',
 		email: '',
 		password: '',
+		dob: '',
 	});
 	const [error, setError] = useState('');
+	const [success, setSuccess] = useState('');
 	const navigate = useNavigate();
 
-	const { email, password } = formData;
+	const { username, email, password, dob } = formData;
 
 	const onChange = (e) =>
 		setFormData({ ...formData, [e.target.name]: e.target.value });
 
 	const onSubmit = async (e) => {
 		e.preventDefault();
+
 		try {
-			const response = await fetch('http://localhost:5000/api/auth/login', {
+			const response = await fetch('http://localhost:5000/api/auth/register', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
 				},
-				credentials: 'include', // Ensure cookies are included in the request
+				credentials: 'include', // Include cookies in the request
 				body: JSON.stringify(formData),
 			});
 
 			const data = await response.json();
 
 			if (!response.ok) {
-				throw new Error(data.msg || 'Login failed.');
+				throw new Error(data.msg || 'Registration failed.');
 			}
 
+			setSuccess('Registration successful!');
 			setError('');
-			navigate('/'); // Redirect after successful login
+			navigate('/'); // Redirect after successful registration
 		} catch (err) {
 			setError(err.message);
+			setSuccess('');
 		}
 	};
 
 	return (
 		<div>
-			<h1>Login</h1>
+			<h1>Register</h1>
 			{error && <div style={{ color: 'red' }}>{error}</div>}
+			{success && <div style={{ color: 'green' }}>{success}</div>}
 			<form onSubmit={onSubmit}>
+				<div>
+					<label>Username</label>
+					<input
+						type='text'
+						name='username'
+						value={username}
+						onChange={onChange}
+						required
+					/>
+				</div>
 				<div>
 					<label>Email</label>
 					<input
@@ -64,10 +81,20 @@ const Login = () => {
 						required
 					/>
 				</div>
-				<button type='submit'>Login</button>
+				<div>
+					<label>Date of Birth</label>
+					<input
+						type='date'
+						name='dob'
+						value={dob}
+						onChange={onChange}
+						required
+					/>
+				</div>
+				<button type='submit'>Register</button>
 			</form>
 		</div>
 	);
 };
 
-export default Login;
+export default Register;

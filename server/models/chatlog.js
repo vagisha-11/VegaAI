@@ -1,17 +1,20 @@
 const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
-const chatLogSchema = new mongoose.Schema(
-	{
-		userId: { type: mongoose.Schema.Types.ObjectId, required: true },
-		conversation: [
-			{
-				role: { type: String, required: true },
-				content: { type: String, required: true },
-				timestamp: { type: Date, default: Date.now },
-			},
-		],
-	},
-	{ timestamps: true }
-);
+const ChatSchema = new Schema({
+	userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+	chatSessionId: { type: String, required: true },
+	history: [
+		{
+			role: { type: String, enum: ['user', 'gemini'], required: true },
+			parts: [
+				{
+					text: { type: String, required: true },
+				},
+			],
+		},
+	],
+	createdAt: { type: Date, default: Date.now },
+});
 
-module.exports = mongoose.model('ChatLog', chatLogSchema);
+module.exports = mongoose.model('Chatlog', ChatSchema);

@@ -1,98 +1,208 @@
-/* src/App.css */
-body {
+/* Global Styles */
+* {
 	margin: 0;
 	padding: 0;
-	font-family: 'Arial', sans-serif;
-	background-color: #1e1e1e;
-	color: #d4d4d4;
+	box-sizing: border-box;
 }
 
-.container {
-	max-width: 800px;
-	margin: 0 auto;
-	padding: 40px;
-	padding-top: 0px;
-	text-align: center;
+body {
+	font-family: 'Poppins', Arial, sans-serif;
+	background-color: #f0f2f5;
+	color: #2e2e2e;
+}
+a {
+	text-decoration: none;
+}
+/* App Container */
+.app-container {
+	display: flex;
+	height: 100vh;
 }
 
-h1 {
-	color: #ffffff;
-	font-size: 36px;
+/* Sidebar */
+.sidebar {
+	width: 220px;
+	background-color: #2e2e2e;
+	color: #fff;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding: 30px 20px;
+}
+
+.sidebar-logo img {
+	width: 120px;
+}
+
+.sidebar h1 {
+	font-size: 32px;
+	font-family: 'Times New Roman', serif;
+	color: #4a90e2;
+	letter-spacing: 4px;
+	margin-bottom: 15px;
+}
+
+.sidebar-nav ul {
+	list-style: none;
+	padding: 0;
+	width: 100%;
+	margin-top: 90px;
+}
+
+.sidebar-nav li {
+	padding: 15px 10px;
+	margin: 10px 0;
+	width: 150px;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 8px;
+	background-color: #383838;
+	transition: background-color 0.3s ease;
+}
+
+.sidebar-nav li:hover {
+	background-color: #4a90e2;
+}
+
+.sidebar-nav li i {
+	margin-right: 8px;
+	font-size: 18px;
+	color: #8bc34a;
+}
+
+.sidebar-nav li i.icon-settings {
+	color: #ffa500;
+}
+.auth ul {
+	display: flex;
+	max-height: 200px;
+	flex-direction: row;
+}
+.auth li {
+	padding: 10px 10px;
+	margin: 200px 10px;
+	width: 90px;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 8px;
+	background-color: #383838;
+	transition: background-color 0.3s ease;
+}
+.auth li a {
+	text-decoration: none;
+	color: white;
+}
+.auth li:hover {
+	background-color: #4a90e2;
+}
+/* Main Content */
+.main-content {
+	flex-grow: 1;
+	display: flex;
+	flex-direction: column;
+	padding: 30px;
+}
+
+.header h1 {
+	font-size: 28px;
+	color: #2a2a3e;
 	margin-bottom: 20px;
 }
 
+/* Chat Container */
 .chat-container {
-	height: 400px;
-	overflow-y: auto;
-	background-color: #2d2d2d;
+	flex-grow: 1;
+	background-color: #fff;
 	border-radius: 10px;
 	padding: 20px;
-	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+	overflow-y: auto;
 	margin-bottom: 20px;
-	text-align: left;
 }
 
-.chat-container::-webkit-scrollbar {
-	width: 8px;
-}
-
-.chat-container::-webkit-scrollbar-thumb {
-	background-color: #555;
-	border-radius: 10px;
-}
-
+/* Message Styling */
 .message {
 	margin-bottom: 15px;
-	/* display: flex;
-  align-items: flex-start; */
+	padding: 15px;
+	border-radius: 8px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.message strong {
-	margin-right: 10px;
-	color: #ffffff;
+.message.user {
+	background-color: #e8f4ff;
 }
 
-.message.user strong {
-	color: #00aaff;
+.message.gemini {
+	background-color: #f4f4f4;
 }
 
-.message.assistant strong {
-	color: #ff9800;
+/* Explanation Styles */
+.explanation {
+	font-size: 16px;
+	line-height: 1.5;
 }
 
 .textarea {
 	width: 100%;
-	background-color: #2d2d2d;
-	color: #ffffff;
-	border: none;
 	padding: 15px;
-	font-size: 16px;
-	border-radius: 5px;
-	outline: none;
-	resize: none;
-}
-
-.file-input {
+	border: 1px solid #d1d1d1;
+	border-radius: 8px;
 	margin-top: 15px;
-	color: #ffffff;
+	font-size: 16px;
+	background-color: #fff;
 }
 
+/* Error Message */
+.error {
+	color: red;
+	margin-top: 10px;
+}
+
+/* Voice Controls */
+.voice-controls {
+	display: flex;
+	gap: 10px;
+	margin: 15px 0px;
+}
+.voice-controls button {
+	background-color: rgb(250, 169, 131);
+	font-size: 15px;
+	padding: 4px;
+	border-radius: 5px;
+	border: 2px solid black;
+}
+
+/* Buttons */
 .button {
 	background-color: #007bff;
 	color: white;
-	padding: 10px 20px;
-	font-size: 16px;
+	padding: 12px 24px;
+	margin: 2px;
 	border: none;
-	border-radius: 5px;
+	border-radius: 6px;
 	cursor: pointer;
-	margin-top: 15px;
+	font-size: 16px;
+	transition: background-color 0.3s ease;
+}
+
+.button:hover {
+	background-color: #0056b3;
 }
 
 .button:disabled {
-	background-color: #555;
+	background-color: #ccc;
 	cursor: not-allowed;
 }
 
-.button:hover:enabled {
-	background-color: #0056b3;
+/* TTS Button */
+.tts-toggle {
+	background-color: #8bc34a;
+}
+
+.tts-toggle:hover {
+	background-color: #689f38;
 }
