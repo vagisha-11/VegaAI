@@ -3,7 +3,9 @@
 Welcome to the AI Chat Platform! This project provides users with an AI assistant powered by the Gemini API, offering features such as text-to-speech, speech-to-text, file uploads, chat history preservation, user registration and login, and formatted code snippet display.
 
 
-
+# Deployed Link
+https://vega-ai-theta.vercel.app/
+(Registered id is requires in order to get responses)
 
 
 
