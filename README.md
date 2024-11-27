@@ -5,7 +5,8 @@ Welcome to the AI Chat Platform! This project provides users with an AI assistan
 
 # Deployed Link
 https://vega-ai-theta.vercel.app/
-(Registered id is requires in order to get responses)
+
+(Login/Register to get responses)
 
 
 
