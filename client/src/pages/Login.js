@@ -17,14 +17,17 @@ const Login = () => {
 	const onSubmit = async (e) => {
 		e.preventDefault();
 		try {
-			const response = await fetch('http://localhost:5000/api/auth/login', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				credentials: 'include', // Ensure cookies are included in the request
-				body: JSON.stringify(formData),
-			});
+			const response = await fetch(
+				'https://vegaai.onrender.com/api/auth/login',
+				{
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					credentials: 'include', // Ensure cookies are included in the request
+					body: JSON.stringify(formData),
+				}
+			);
 
 			const data = await response.json();
 
