@@ -8,7 +8,25 @@ Welcome to the AI Chat Platform! This project provides users with an AI assistan
 
 
 
-# Features and Usage
+# Features
+
+##  Navigation
+* The platform allows seamless navigation across functionalities such as chat interaction, file upload, and chat history.
+## Chat Functionality
+* Users can type queries and receive real-time responses from AI.
+* Responses are streamed back in chunks for instant feedback.
+## Code Snippets
+* AI responses containing code are displayed with syntax highlighting.
+* Users can copy individual code snippets with a single click.
+## File Upload
+* Attach files (up to 20 MB) in supported formats to enhance your queries.
+## Voice Chat
+* Enable speech recognition to ask questions by speaking.
+* Use text-to-speech for hands-free response playback.
+## Authentication
+* Register, log in, and manage sessions securely.
+* Only authenticated users can view their chat history.
+# Functionality Description
 
 ## 1. Basic Chat Functionality:
 
@@ -19,7 +37,6 @@ Welcome to the AI Chat Platform! This project provides users with an AI assistan
 
 ## 2. Code Snippet Display
 * Added a CodeBlock component to display and copy code snippets easily.
-* Integrated Prism.js for syntax highlighting across multiple programming languages.
 * Each code block includes a "Copy" button for convenience.
 
 ## 3. Real-Time Response Streaming
@@ -43,7 +60,7 @@ Welcome to the AI Chat Platform! This project provides users with an AI assistan
 * Authenticated users can retrieve and view their chat history.
 * Access control ensures that only authorized users can access their data, maintaining privacy.
 
-## Technologies Used
+# Technologies Used
 
 
 
@@ -57,7 +74,7 @@ Welcome to the AI Chat Platform! This project provides users with an AI assistan
   * JS 
 
 
-## Deployment
+# Deployment
 
 1. Clone the repository
 
@@ -93,7 +110,7 @@ Welcome to the AI Chat Platform! This project provides users with an AI assistan
   npm install
   npx nodemon index.js
 ```
-## Authors
+# Authors
 
 - [Vagisha Shrivastava](https://github.com/vagisha-11)
 
