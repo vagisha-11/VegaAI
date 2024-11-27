@@ -28,8 +28,7 @@ function Home() {
 		resetTranscript,
 		browserSupportsSpeechRecognition,
 	} = useSpeechRecognition();
-	const backendUrl =
-		process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000/api/chat';
+	const backendUrl = 'http://localhost:5000/api/chat';
 
 	//Speech-to-text
 	const startListening = () => {

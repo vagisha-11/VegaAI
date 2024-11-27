@@ -69,6 +69,7 @@ router.post(
 			res.cookie('token', token, {
 				httpOnly: true, // Ensure cookie is not accessible via JavaScript
 				secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+				sameSite: 'None',
 				maxAge: 3 * 60 * 60 * 1000, // Cookie expires in 3 hours
 			});
 
@@ -121,6 +122,7 @@ router.post(
 			res.cookie('token', token, {
 				httpOnly: true,
 				secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+				sameSite: 'None',
 				maxAge: 3 * 60 * 60 * 1000, // Cookie expires in 3 hours
 			});
 
