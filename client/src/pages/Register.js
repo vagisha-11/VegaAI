@@ -21,17 +21,14 @@ const Register = () => {
 		e.preventDefault();
 
 		try {
-			const response = await fetch(
-				'https://vegaai.onrender.com/api/auth/register',
-				{
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-					},
-					credentials: 'include', // Include cookies in the request
-					body: JSON.stringify(formData),
-				}
-			);
+			const response = await fetch('http://localhost:5000/api/auth/register', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				credentials: 'include', // Include cookies in the request
+				body: JSON.stringify(formData),
+			});
 
 			const data = await response.json();
 

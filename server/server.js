@@ -14,7 +14,7 @@ const app = express();
 app.use(cookieParser());
 
 const corsOptions = {
-	origin: 'http://localhost:3000', // Your frontend URL
+	origin: 'https://vega-ai-mu.vercel.app/', // Your frontend URL
 	credentials: true, // Allow cookies to be sent with requests
 };
 app.use(cors(corsOptions));
@@ -38,7 +38,7 @@ app.use(
 const server = http.createServer(app);
 const io = new Server(server, {
 	cors: {
-		origin: 'http://localhost:3000',
+		origin: 'https://vega-ai-mu.vercel.app/',
 	},
 });
 
