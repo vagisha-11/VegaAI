@@ -13,12 +13,15 @@ function Signup() {
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
-		const response = await fetch('http://localhost:5000/api/auth/register', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ username, email, password, dob }),
-			credentials: 'include',
-		});
+		const response = await fetch(
+			'http://vegaai.onrender.com/api/auth/register',
+			{
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ username, email, password, dob }),
+				credentials: 'include',
+			}
+		);
 		if (response.ok) {
 			alert('User registered successfully!');
 			navigate('/');

@@ -28,7 +28,7 @@ function Home() {
 		resetTranscript,
 		browserSupportsSpeechRecognition,
 	} = useSpeechRecognition();
-	const backendUrl = 'http://localhost:5000/api/chat';
+	const backendUrl = 'http://vegaai.onrender.com/api/chat';
 
 	//Speech-to-text
 	const startListening = () => {
