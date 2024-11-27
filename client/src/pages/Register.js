@@ -22,7 +22,7 @@ const Register = () => {
 
 		try {
 			const response = await fetch(
-				'http://vegaai.onrender.com/api/auth/register',
+				'https://vegaai.onrender.com/api/auth/register',
 				{
 					method: 'POST',
 					headers: {

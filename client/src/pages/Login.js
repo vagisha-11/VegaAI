@@ -18,7 +18,7 @@ const Login = () => {
 		e.preventDefault();
 		try {
 			const response = await fetch(
-				'http://vegaai.onrender.com/api/auth/login',
+				'https://vegaai.onrender.com/api/auth/login',
 				{
 					method: 'POST',
 					headers: {

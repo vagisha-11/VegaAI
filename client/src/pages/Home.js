@@ -28,7 +28,7 @@ function Home() {
 		resetTranscript,
 		browserSupportsSpeechRecognition,
 	} = useSpeechRecognition();
-	const backendUrl = 'http://vegaai.onrender.com/api/chat';
+	const backendUrl = 'https://vegaai.onrender.com/api/chat';
 
 	//Speech-to-text
 	const startListening = () => {
@@ -233,7 +233,7 @@ function Home() {
 			if (historyToSave.length > 0) {
 				// Use sendBeacon to send the chat history asynchronously before the page unloads
 				navigator.sendBeacon(
-					'http://localhost:5000/api/chat/save-history',
+					'https://localhost:5000/api/chat/save-history',
 					JSON.stringify({ history: historyToSave })
 				);
 			}

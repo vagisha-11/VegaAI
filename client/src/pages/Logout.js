@@ -10,7 +10,7 @@ const Logout = () => {
 			try {
 				// Make the POST request to the logout endpoint using fetch
 				const response = await fetch(
-					'http://vegaai.onrender.com/api/auth/logout',
+					'https://vegaai.onrender.com/api/auth/logout',
 					{
 						method: 'POST',
 						credentials: 'include', // Include cookies to clear the JWT token stored as a cookie
