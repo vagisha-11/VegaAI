@@ -116,4 +116,5 @@ https://vega-ai-theta.vercel.app/
 # Authors
 
 - [Vagisha Shrivastava](https://github.com/vagisha-11)
+- [Ayush Wani](https://github.com/AyushWani11)
 
