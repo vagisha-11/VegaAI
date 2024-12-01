@@ -2,20 +2,28 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const User = require('../models/user'); // Your User model
 const { check, validationResult } = require('express-validator');
-const authLogin = require('../middleware/authToken');
 const mongoose = require('mongoose');
+const User = require('../models/user'); // User model
+const authLogin = require('../middleware/authToken');
 
-// JWT secret
+// ======================== CONFIGURATION ========================
+
+// JWT secret key
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
 
-mongoose.connect(process.env.MONGODB_URI, {
-	useNewUrlParser: true,
-	useUnifiedTopology: true,
-});
+// Connect to MongoDB
+mongoose
+	.connect(process.env.MONGODB_URI, {
+		useNewUrlParser: true,
+		useUnifiedTopology: true,
+	})
+	.then(() => console.log('MongoDB connected'))
+	.catch((err) => console.error('MongoDB connection error:', err));
 
-// Register new user
+// ======================== ROUTES ========================
+
+// Register a new user
 router.post(
 	'/register',
 	[
@@ -35,13 +43,13 @@ router.post(
 		const { username, email, password, dob } = req.body;
 
 		try {
-			// Check if user exists
+			// Check if user already exists
 			let user = await User.findOne({ email });
 			if (user) {
 				return res.status(400).json({ msg: 'User already exists' });
 			}
 
-			// Create new user
+			// Create new user instance
 			user = new User({
 				username,
 				email,
@@ -49,32 +57,27 @@ router.post(
 				dob,
 			});
 
-			// Hash the password before saving
+			// Hash the password
 			const salt = await bcrypt.genSalt(10);
 			user.password = await bcrypt.hash(password, salt);
 
-			// Save user to database
+			// Save user to the database
 			await user.save();
 
 			// Generate JWT token
-			const payload = {
-				user: {
-					id: user.id,
-				},
-			};
-
+			const payload = { user: { id: user.id } };
 			const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '3h' });
 
-			// Set token as a HTTP-only cookie
+			// Set token as an HTTP-only cookie
 			res.cookie('token', token, {
-				httpOnly: true, // Ensure cookie is not accessible via JavaScript
-				secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
-				maxAge: 3 * 60 * 60 * 1000, // Cookie expires in 3 hours
+				httpOnly: true,
+				secure: process.env.NODE_ENV === 'production',
+				maxAge: 3 * 60 * 60 * 1000, // 3 hours
 			});
 
 			res.status(200).json({ msg: 'User registered successfully' });
 		} catch (err) {
-			console.error(err.message);
+			console.error('Registration error:', err);
 			res.status(500).json({ msg: 'Server error' });
 		}
 	}
@@ -96,46 +99,47 @@ router.post(
 		const { email, password } = req.body;
 
 		try {
-			// Check if user exists
+			// Find user by email
 			let user = await User.findOne({ email });
 			if (!user) {
 				return res.status(400).json({ msg: 'Invalid credentials' });
 			}
 
-			// Compare passwords
+			// Verify password
 			const isMatch = await bcrypt.compare(password, user.password);
 			if (!isMatch) {
 				return res.status(400).json({ msg: 'Invalid credentials' });
 			}
 
 			// Generate JWT token
-			const payload = {
-				user: {
-					id: user.id,
-				},
-			};
-
+			const payload = { user: { id: user.id } };
 			const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '3h' });
 
-			// Set token as a HTTP-only cookie
+			// Set token as an HTTP-only cookie
 			res.cookie('token', token, {
 				httpOnly: true,
-				secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
-				maxAge: 3 * 60 * 60 * 1000, // Cookie expires in 3 hours
+				secure: process.env.NODE_ENV === 'production',
+				maxAge: 3 * 60 * 60 * 1000, // 3 hours
 			});
 
 			res.status(200).json({ msg: 'Login successful' });
 		} catch (err) {
-			console.error(err.message);
+			console.error('Login error:', err);
 			res.status(500).send('Server error');
 		}
 	}
 );
 
-// Logout user - clears the cookie
+// Check if the user is logged in
+router.get('/check-login', authLogin, (req, res) => {
+	res.status(200).json({ msg: 'User is logged in', user: req.user });
+});
+
+// Logout user
 router.post('/logout', (req, res) => {
-	res.clearCookie('token'); // Clear the JWT cookie
+	res.clearCookie('token'); // Clear JWT cookie
 	res.status(200).json({ msg: 'Logged out successfully' });
 });
 
+// ======================== EXPORT ========================
 module.exports = router;

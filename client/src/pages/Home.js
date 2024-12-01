@@ -1,16 +1,31 @@
 import React, { useState, useRef, useEffect } from 'react';
-import CodeBlock from '../Components/Codeblock'; // Ensure this component handles language highlighting
+import CodeBlock from '../Components/Codeblock';
 import { marked } from 'marked';
-import 'prismjs/components/prism-javascript'; // JavaScript
-import 'prismjs/components/prism-python'; // Python
-import 'prismjs/components/prism-java'; // Java
-import 'prismjs/components/prism-c'; // C
-import 'prismjs/components/prism-cpp'; // C++
 import SpeechRecognition, {
 	useSpeechRecognition,
 } from 'react-speech-recognition';
+import 'prismjs/components/prism-javascript';
+import 'prismjs/components/prism-python';
+import 'prismjs/components/prism-java';
+import 'prismjs/components/prism-c';
+import 'prismjs/components/prism-cpp';
 import '../css/Home.css';
 import logo from '../css/VeggieLogo.png';
+import bg from '../css/photobg.mp4';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+	faBars,
+	faMagnifyingGlass,
+	faPaperclip,
+	faCircleXmark,
+	faRocket,
+	faHourglassStart,
+	faMicrophone,
+	faMicrophoneSlash,
+	faVolumeHigh,
+	faVolumeXmark,
+	faPen,
+} from '@fortawesome/free-solid-svg-icons';
 
 function Home() {
 	const [question, setQuestion] = useState('');
@@ -19,19 +34,71 @@ function Home() {
 	const [file, setFile] = useState(null);
 	const [isTTSActive, setIsTTSActive] = useState(false);
 	const [error, setError] = useState('');
+	const [isLoggedIn, setIsLoggedIn] = useState(true);
+	const [username, setUsername] = useState('');
+	const [chatSessions, setChatSessions] = useState([]);
+	const [selectedSessionHistory, setSelectedSessionHistory] = useState([]);
+
 	const fileInputRef = useRef(null);
 	const chatEndRef = useRef(null);
-
+	const chatHistoryRef = useRef([]);
 	const {
 		transcript,
 		listening,
 		resetTranscript,
 		browserSupportsSpeechRecognition,
 	} = useSpeechRecognition();
+
 	const backendUrl =
 		process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000/api/chat';
 
-	//Speech-to-text
+	useEffect(() => {
+		const fetchChatSessions = async () => {
+			if (isLoggedIn) {
+				try {
+					const response = await fetch(
+						'http://localhost:5000/api/chat/history',
+						{
+							method: 'GET',
+							credentials: 'include',
+						}
+					);
+
+					if (response.ok) {
+						const data = await response.json();
+						setChatSessions(data.chatHistory);
+					} else {
+						console.error('Failed to fetch chat sessions');
+					}
+				} catch (err) {
+					console.error('Error fetching chat sessions:', err);
+				}
+			}
+		};
+		fetchChatSessions();
+	}, [isLoggedIn]);
+
+	const fetchSessionHistory = async (sessionId) => {
+		try {
+			const response = await fetch(
+				`http://localhost:5000/api/chat/history/${sessionId}`,
+				{
+					method: 'GET',
+					credentials: 'include',
+				}
+			);
+
+			if (response.ok) {
+				const data = await response.json();
+				setSelectedSessionHistory(data.history);
+			} else {
+				console.error('Failed to fetch session history');
+			}
+		} catch (err) {
+			console.error('Error fetching session history:', err);
+		}
+	};
+
 	const startListening = () => {
 		SpeechRecognition.startListening({ continuous: true });
 	};
@@ -42,16 +109,10 @@ function Home() {
 		resetTranscript();
 	};
 
-	const chatHistoryRef = useRef([]);
+	const pushHistory = (role, message) => {
+		chatHistoryRef.current.push({ role, parts: [{ text: message }] });
+	};
 
-	function pushHistory(role, message) {
-		chatHistoryRef.current.push({
-			role: role, // e.g., 'user' or 'model'
-			parts: [{ text: message }],
-		});
-	}
-
-	// function to ask question
 	const askQuestion = async (trimmedQuestion) => {
 		setLoading(true);
 		setConversation((prev) => [
@@ -62,9 +123,7 @@ function Home() {
 
 		const formData = new FormData();
 		formData.append('question', trimmedQuestion);
-		if (file) {
-			formData.append('file', file);
-		}
+		if (file) formData.append('file', file);
 
 		try {
 			const response = await fetch(backendUrl, {
@@ -73,34 +132,29 @@ function Home() {
 				credentials: 'include',
 			});
 
-			if (!response.ok) {
+			if (!response.ok)
 				throw new Error(`HTTP error! Status: ${response.status}`);
-			}
 
-			// Streaming the response text
 			const reader = response.body.getReader();
-			let decoder = new TextDecoder();
+			const decoder = new TextDecoder();
 			let responseText = '';
 			let done = false;
-			let firstChunkReceived = false; // Track whether the first chunk has been received
+			let firstChunkReceived = false;
 
-			// Create a helper function to simulate typing effect
 			const simulateTyping = async (text) => {
 				for (let i = 0; i < text.length; i++) {
-					const currentChar = text[i];
-					responseText += currentChar;
-					await new Promise((resolve) => setTimeout(resolve, 20)); // Typing speed
+					responseText += text[i];
+					await new Promise((resolve) => setTimeout(resolve, 20));
 					setConversation((prev) => {
 						const updatedMessages = [...prev];
-						const lastGeminiMessageIndex = updatedMessages
+						const lastVegaIndex = updatedMessages
 							.reverse()
-							.findIndex((msg) => msg.role === 'gemini');
-						if (lastGeminiMessageIndex !== -1) {
-							updatedMessages[lastGeminiMessageIndex].content = responseText;
+							.findIndex((msg) => msg.role === 'vega');
+						if (lastVegaIndex !== -1) {
+							updatedMessages[lastVegaIndex].content = responseText;
 						}
-						return updatedMessages.reverse(); // Reverse back the array
+						return updatedMessages.reverse();
 					});
-
 					chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
 				}
 			};
@@ -109,89 +163,33 @@ function Home() {
 				const { value, done: readerDone } = await reader.read();
 				done = readerDone;
 
-				// Decode the chunk and append it to the response
 				const chunkText = decoder.decode(value, { stream: true });
 
-				// If the first chunk is received, create a new 'gemini' message block
 				if (!firstChunkReceived) {
-					setConversation((prev) => [
-						...prev,
-						{ role: 'gemini', content: '' }, // Create an empty block for the response
-					]);
-					firstChunkReceived = true; // Mark that the block has been created
+					setConversation((prev) => [...prev, { role: 'vega', content: '' }]);
+					firstChunkReceived = true;
 				}
 
-				// Simulate typing the chunk received
 				await simulateTyping(chunkText);
 			}
 
-			pushHistory('gemini', responseText);
-
-			if (isTTSActive) {
-				speakOutLoud(responseText);
-			}
+			pushHistory('vega', responseText);
+			if (isTTSActive) speakOutLoud(responseText);
 		} catch (error) {
 			console.error('Error:', error);
 			setConversation((prev) => [
 				...prev,
-				{ role: 'gemini', content: "Sorry, I couldn't process your request." },
+				{ role: 'vega', content: "Sorry, I couldn't process your request." },
 			]);
 		} finally {
 			setLoading(false);
 			setQuestion('');
 			setFile(null);
-			if (fileInputRef.current) {
-				fileInputRef.current.value = '';
-			}
+			if (fileInputRef.current) fileInputRef.current.value = '';
 			chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
 		}
 	};
 
-	const handleAskButtonClick = () => {
-		const trimmedQuestion = question.trim();
-		if (trimmedQuestion) {
-			askQuestion(trimmedQuestion);
-		} else {
-			alert('Please enter a question.');
-		}
-	};
-
-	//file upload
-	const handleFileChange = (e) => {
-		const uploadedFile = e.target.files[0];
-		const validTypes = [
-			'text/plain',
-			'text/csv',
-			'application/json',
-			'application/pdf',
-		];
-		const maxSizeInMB = 20;
-
-		if (uploadedFile) {
-			if (!validTypes.includes(uploadedFile.type)) {
-				setFile(null);
-				setError('File type not supported. Please upload a valid file.');
-				if (fileInputRef.current) {
-					fileInputRef.current.value = '';
-				}
-				return;
-			}
-
-			if (uploadedFile.size > maxSizeInMB * 1024 * 1024) {
-				setFile(null);
-				setError(`File size should not exceed ${maxSizeInMB} MB.`);
-				if (fileInputRef.current) {
-					fileInputRef.current.value = '';
-				}
-				return;
-			}
-
-			setFile(uploadedFile);
-			setError('');
-		}
-	};
-
-	// Separating code Blocks from normal responses
 	const extractCodeBlocks = (text) => {
 		const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g;
 		const parts = [];
@@ -216,7 +214,6 @@ function Home() {
 		return parts;
 	};
 
-	// Text- to -speech
 	const speakOutLoud = (text) => {
 		const synth = window.speechSynthesis;
 		const utterance = new SpeechSynthesisUtterance(text);
@@ -224,30 +221,124 @@ function Home() {
 		synth.speak(utterance);
 	};
 
-	const toggleTTS = () => {
-		setIsTTSActive((prev) => !prev);
+	const handleTextareaResize = (textarea) => {
+		const lineHeight = 30;
+		const maxLines = 4;
+		const baseHeight = 30;
+		textarea.style.height = 'auto';
+		const lines = Math.min(
+			maxLines,
+			Math.ceil(textarea.scrollHeight / lineHeight)
+		);
+		textarea.style.height = `${baseHeight + (lines - 1) * lineHeight}px`;
 	};
+
+	const handleFileChange = (e) => {
+		const uploadedFile = e.target.files[0];
+		const validTypes = [
+			'text/plain',
+			'text/csv',
+			'application/json',
+			'application/pdf',
+		];
+		const maxSizeInMB = 20;
+
+		if (uploadedFile) {
+			if (!validTypes.includes(uploadedFile.type)) {
+				setFile(null);
+				setError('File type not supported. Please upload a valid file.');
+				if (fileInputRef.current) fileInputRef.current.value = '';
+				return;
+			}
+
+			if (uploadedFile.size > maxSizeInMB * 1024 * 1024) {
+				setFile(null);
+				setError(`File size should not exceed ${maxSizeInMB} MB.`);
+				if (fileInputRef.current) fileInputRef.current.value = '';
+				return;
+			}
+
+			setFile(uploadedFile);
+			setError('');
+		}
+	};
+
+	const handleRemoveFile = () => {
+		setFile(null);
+		setError('');
+		if (fileInputRef.current) fileInputRef.current.value = '';
+	};
+
+	const toggleTTS = () => setIsTTSActive((prev) => !prev);
+
+	const handleAskButtonClick = () => {
+		const trimmedQuestion = question.trim();
+		if (trimmedQuestion) askQuestion(trimmedQuestion);
+		else alert('Please enter a question.');
+	};
+
+	useEffect(() => {
+		const checkLoginStatus = async () => {
+			try {
+				const response = await fetch(
+					'http://localhost:5000/api/auth/check-login',
+					{
+						method: 'GET',
+						credentials: 'include',
+					}
+				);
+
+				if (response.ok) {
+					const data = await response.json();
+					setIsLoggedIn(true);
+					setUsername(data.user.username);
+				} else {
+					setIsLoggedIn(false);
+					setUsername('');
+				}
+			} catch (err) {
+				console.error('Error checking login status:', err);
+				setIsLoggedIn(false);
+				setUsername('');
+			}
+		};
+		checkLoginStatus();
+	}, []);
 
 	useEffect(() => {
 		const handleBeforeUnload = (e) => {
 			const historyToSave = chatHistoryRef.current;
 			if (historyToSave.length > 0) {
-				// Use sendBeacon to send the chat history asynchronously before the page unloads
 				navigator.sendBeacon(
 					'http://localhost:5000/api/chat/save-history',
 					JSON.stringify({ history: historyToSave })
 				);
 			}
 		};
-
-		// Add the event listener when the component mounts
 		window.addEventListener('beforeunload', handleBeforeUnload);
+		return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+	}, []);
 
-		// Clean up the event listener when the component unmounts
-		return () => {
-			window.removeEventListener('beforeunload', handleBeforeUnload);
-		};
-	}, []); // Empty dependency array ensures this runs only once on mount
+	const handleLogout = async () => {
+		try {
+			const response = await fetch('http://localhost:5000/api/auth/logout', {
+				method: 'POST',
+				credentials: 'include',
+			});
+
+			if (response.ok) {
+				setIsLoggedIn(false);
+				setUsername('');
+				setChatSessions([]);
+				setSelectedSessionHistory([]);
+				alert('You have been logged out!');
+			} else {
+				console.error('Failed to log out');
+			}
+		} catch (err) {
+			console.error('Error logging out:', err);
+		}
+	};
 
 	if (!browserSupportsSpeechRecognition) {
 		return <div>Your browser does not support speech recognition.</div>;
@@ -255,108 +346,244 @@ function Home() {
 
 	return (
 		<div className='app-container'>
-			<aside className='sidebar'>
-				<div className='sidebar-logo'>
-					<img src={logo} alt='Veggie Logo' />
-				</div>
-				<h1>VEGA AI</h1>
-				<nav className='sidebar-nav'>
-					<ul>
-						<li>
-							<a href='/'>Chat</a>
-						</li>
-						<li>History</li>
-						<li>Settings</li>
-						<li>Help</li>
-					</ul>
-				</nav>
+			<video className='video-background' autoPlay muted loop>
+				<source src={bg} type='video/mp4' />
+				Your browser does not support the video tag.
+			</video>
 
+			<nav className='navbar'>
+				<a className='logoDiv' href='/'>
+					<div className='navbar-logo'>
+						<img src={logo} alt='Veggie Logo' />
+					</div>
+					<h1>VEGA AI</h1>
+				</a>
 				<div className='auth'>
 					<ul>
-						<li>
-							{' '}
-							<a href='/login'>Login</a>
-						</li>
-						<li>
-							<a href='/register'>Signup</a>
-						</li>
+						{isLoggedIn ? (
+							<>
+								<li>
+									<span>Welcome, {username}</span>
+								</li>
+								<li>
+									<a onClick={handleLogout}>Logout</a>
+								</li>
+							</>
+						) : (
+							<>
+								<li>
+									<a href='/login'>Login</a>
+								</li>
+								<li>
+									<a href='/register'>Signup</a>
+								</li>
+							</>
+						)}
 					</ul>
 				</div>
-			</aside>
+			</nav>
 
-			<main className='main-content'>
-				<header className='header'>
-					<h1>How may I help you?</h1>
-				</header>
+			<div style={{ display: 'flex', flex: '1' }}>
+				<aside className='history'>
+					<div className='hisTitle'>
+						<h3
+							style={{
+								display: 'flex',
+								alignItems: 'center',
+								justifyContent: 'space-between',
+							}}
+						>
+							<FontAwesomeIcon icon={faBars} />
+							<p
+								style={{
+									margin: '0px 15px',
+									textAlign: 'center',
+									paddingBottom: '2px',
+								}}
+							>
+								Your History
+							</p>
+						</h3>
+						<a href='/'>
+							<h4>
+								<FontAwesomeIcon icon={faPen} />
+							</h4>
+						</a>
+					</div>
+					<div className='historyContent'>
+						{chatSessions.length > 0 ? (
+							chatSessions.map((session) => (
+								<div
+									key={session.chatSessionId}
+									onClick={() => fetchSessionHistory(session.chatSessionId)}
+									className='historySes'
+								>
+									<p>
+										<strong>Session:</strong> {session.chatSessionId}
+									</p>
+									<p>
+										<strong>Date:</strong>{' '}
+										{new Date(session.createdAt).toLocaleString()}
+									</p>
+								</div>
+							))
+						) : (
+							<p>No chat sessions available.</p>
+						)}
+					</div>
+					{chatSessions.length > 0 ? (
+						<div style={{ color: 'white', margin: '10px' }}>
+							Click on a session to view Chat History
+						</div>
+					) : (
+						<></>
+					)}
+				</aside>
 
-				<div className='chat-container'>
-					{conversation.map((msg, index) => {
-						const parts = extractCodeBlocks(msg.content);
-						return (
-							<div key={index} className={`message ${msg.role}`}>
-								<strong>{msg.role === 'user' ? 'You' : 'Gemini'}:</strong>
-								{parts.map((part, i) => {
-									if (part.type === 'code') {
-										return (
-											<CodeBlock
-												key={i}
-												code={part.content}
-												language={part.language}
-											/>
-										);
-									} else {
-										return (
-											<div
-												key={i}
-												className='explanation'
-												dangerouslySetInnerHTML={{
-													__html: marked(part.content),
-												}}
-											/>
-										);
-									}
-								})}
+				<main className='main-content'>
+					{selectedSessionHistory.length > 0 ? (
+						<header className='header'>
+							<h1>Chat History</h1>
+						</header>
+					) : (
+						<header className='header'>
+							<h1>How may I help you?</h1>
+						</header>
+					)}
+
+					<div className='chat-container'>
+						{selectedSessionHistory.length > 0
+							? selectedSessionHistory.map((msg, index) => (
+									<div key={index} className={`message ${msg.role}`}>
+										<strong>{msg.role === 'user' ? 'You' : 'Vega'}:</strong>
+										<p>{msg.parts.map((part) => part.text).join(' ')}</p>
+									</div>
+							  ))
+							: conversation.map((msg, index) => {
+									const parts = extractCodeBlocks(msg.content);
+									return (
+										<div key={index} className={`message ${msg.role}`}>
+											<strong>{msg.role === 'user' ? 'You' : 'Vega'}:</strong>
+											{parts.map((part, i) =>
+												part.type === 'code' ? (
+													<CodeBlock
+														key={i}
+														code={part.content}
+														language={part.language}
+													/>
+												) : (
+													<div
+														key={i}
+														className='explanation'
+														dangerouslySetInnerHTML={{
+															__html: marked(part.content),
+														}}
+													/>
+												)
+											)}
+										</div>
+									);
+							  })}
+						<div ref={chatEndRef} />
+					</div>
+
+					<div style={{ display: 'flex', alignItems: 'end', width: '95%' }}>
+						<div className='prompt'>
+							<textarea
+								className='textarea'
+								rows='1'
+								value={question}
+								placeholder='Ask VEGA :)'
+								onChange={(e) => {
+									setQuestion(e.target.value);
+									handleTextareaResize(e.target);
+								}}
+							/>
+							<div
+								style={{
+									display: 'flex',
+									alignItems: 'center',
+									justifyContent: 'space-between',
+									flexGrow: '1',
+									backgroundColor: 'white',
+									width: '100%',
+								}}
+							>
+								<div style={{ display: 'flex' }}>
+									<h2
+										onClick={() => fileInputRef.current?.click()}
+										className='icons'
+									>
+										<FontAwesomeIcon icon={faPaperclip} />
+									</h2>
+									<h2
+										onClick={listening ? stopListening : startListening}
+										className='icons'
+									>
+										{listening ? (
+											<FontAwesomeIcon icon={faMicrophoneSlash} />
+										) : (
+											<FontAwesomeIcon icon={faMicrophone} />
+										)}
+									</h2>
+								</div>
+								<h2
+									onClick={handleAskButtonClick}
+									disabled={loading}
+									className='icons'
+									style={{ margin: '0px' }}
+								>
+									{loading ? (
+										<FontAwesomeIcon icon={faHourglassStart} />
+									) : (
+										<FontAwesomeIcon icon={faRocket} />
+									)}
+								</h2>
 							</div>
-						);
-					})}
-					<div ref={chatEndRef} />
-				</div>
+						</div>
+						<h2
+							className='icons'
+							onClick={toggleTTS}
+							style={{
+								backgroundColor: 'white',
+								color: '#001e45',
+								marginBottom: '10px',
+								marginLeft: '10px',
+							}}
+						>
+							{isTTSActive ? (
+								<FontAwesomeIcon icon={faVolumeXmark} />
+							) : (
+								<FontAwesomeIcon icon={faVolumeHigh} />
+							)}
+						</h2>
+					</div>
 
-				<textarea
-					className='textarea'
-					rows='4'
-					placeholder='Ask a question...'
-					value={question}
-					onChange={(e) => setQuestion(e.target.value)}
-				/>
-				<br />
+					{file && (
+						<p style={{ margin: '0px 5px' }}>
+							Selected file:{' '}
+							<strong style={{ margin: '0px 5px', marginRight: '10px' }}>
+								{file.name}
+							</strong>
+							<span
+								style={{ fontSize: 'small', cursor: 'pointer' }}
+								onClick={handleRemoveFile}
+							>
+								<FontAwesomeIcon icon={faCircleXmark} />
+							</span>
+						</p>
+					)}
 
-				<input type='file' onChange={handleFileChange} ref={fileInputRef} />
+					<input
+						type='file'
+						onChange={handleFileChange}
+						ref={fileInputRef}
+						style={{ display: 'none' }}
+					/>
 
-				{error && <div className='error'>{error}</div>}
-
-				<div className='voice-controls'>
-					<button onClick={startListening} disabled={loading || listening}>
-						{listening ? 'Listening...' : 'Start Voice Chat'}
-					</button>
-					<button onClick={stopListening} disabled={!listening}>
-						Stop Voice Chat
-					</button>
-				</div>
-
-				<button
-					className='button'
-					onClick={handleAskButtonClick}
-					disabled={loading}
-				>
-					{loading ? 'Loading...' : 'Ask'}
-				</button>
-
-				{/* Text-to-Speech Toggle Button */}
-				<button className='button tts-toggle' onClick={toggleTTS}>
-					{isTTSActive ? 'Disable Voice Response' : 'Enable Voice Response'}
-				</button>
-			</main>
+					{error && <div className='error'>{error}</div>}
+				</main>
+			</div>
 		</div>
 	);
 }

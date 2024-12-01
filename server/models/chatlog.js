@@ -6,7 +6,7 @@ const ChatSchema = new Schema({
 	chatSessionId: { type: String, required: true },
 	history: [
 		{
-			role: { type: String, enum: ['user', 'gemini'], required: true },
+			role: { type: String, enum: ['user', 'vega'], required: true },
 			parts: [
 				{
 					text: { type: String, required: true },
