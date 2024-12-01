@@ -70,9 +70,10 @@ router.post(
 
 			// Set token as an HTTP-only cookie
 			res.cookie('token', token, {
-				httpOnly: true,
-				secure: process.env.NODE_ENV === 'production',
-				maxAge: 3 * 60 * 60 * 1000, // 3 hours
+				httpOnly: true, // Ensure cookie is not accessible via JavaScript
+				secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+				sameSite: 'None',
+				maxAge: 3 * 60 * 60 * 1000, // Cookie expires in 3 hours
 			});
 
 			res.status(200).json({ msg: 'User registered successfully' });
@@ -118,8 +119,9 @@ router.post(
 			// Set token as an HTTP-only cookie
 			res.cookie('token', token, {
 				httpOnly: true,
-				secure: process.env.NODE_ENV === 'production',
-				maxAge: 3 * 60 * 60 * 1000, // 3 hours
+				secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+				sameSite: 'None',
+				maxAge: 3 * 60 * 60 * 1000, // Cookie expires in 3 hours
 			});
 
 			res.status(200).json({ msg: 'Login successful' });

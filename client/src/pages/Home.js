@@ -48,16 +48,14 @@ function Home() {
 		resetTranscript,
 		browserSupportsSpeechRecognition,
 	} = useSpeechRecognition();
-
-	const backendUrl =
-		process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000/api/chat';
+	const backendUrl = 'https://vegaai.onrender.com/api/chat';
 
 	useEffect(() => {
 		const fetchChatSessions = async () => {
 			if (isLoggedIn) {
 				try {
 					const response = await fetch(
-						'http://localhost:5000/api/chat/history',
+						'https://vegaai.onrender.com/api/chat/history',
 						{
 							method: 'GET',
 							credentials: 'include',
@@ -81,7 +79,7 @@ function Home() {
 	const fetchSessionHistory = async (sessionId) => {
 		try {
 			const response = await fetch(
-				`http://localhost:5000/api/chat/history/${sessionId}`,
+				`https://vegaai.onrender.com/api/chat/history/${sessionId}`,
 				{
 					method: 'GET',
 					credentials: 'include',
@@ -281,7 +279,7 @@ function Home() {
 		const checkLoginStatus = async () => {
 			try {
 				const response = await fetch(
-					'http://localhost:5000/api/auth/check-login',
+					'https://vegaai.onrender.com/api/auth/check-login',
 					{
 						method: 'GET',
 						credentials: 'include',
@@ -310,7 +308,7 @@ function Home() {
 			const historyToSave = chatHistoryRef.current;
 			if (historyToSave.length > 0) {
 				navigator.sendBeacon(
-					'http://localhost:5000/api/chat/save-history',
+					'https://vegaai.onrender.com/api/chat/save-history',
 					JSON.stringify({ history: historyToSave })
 				);
 			}
@@ -321,10 +319,13 @@ function Home() {
 
 	const handleLogout = async () => {
 		try {
-			const response = await fetch('http://localhost:5000/api/auth/logout', {
-				method: 'POST',
-				credentials: 'include',
-			});
+			const response = await fetch(
+				'https://vegaai.onrender.com/api/auth/logout',
+				{
+					method: 'POST',
+					credentials: 'include',
+				}
+			);
 
 			if (response.ok) {
 				setIsLoggedIn(false);
