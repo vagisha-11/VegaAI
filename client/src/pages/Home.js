@@ -332,6 +332,7 @@ function Home() {
 				setUsername('');
 				setChatSessions([]);
 				setSelectedSessionHistory([]);
+				setConversation([]);
 				alert('You have been logged out!');
 			} else {
 				console.error('Failed to log out');

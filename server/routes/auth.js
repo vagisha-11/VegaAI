@@ -139,7 +139,11 @@ router.get('/check-login', authLogin, (req, res) => {
 
 // Logout user
 router.post('/logout', (req, res) => {
-	res.clearCookie('token'); // Clear JWT cookie
+	res.clearCookie('token', {
+		httpOnly: true,
+		secure: true,
+		sameSite: 'strict',
+	});
 	res.status(200).json({ msg: 'Logged out successfully' });
 });
 
