@@ -116,11 +116,11 @@ body {
 	color: #6193bf;
 	text-decoration: none;
 	font-weight: 500;
-	transition: background-color 0.3s ease;
+	transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .auth a:hover {
-	background-color: #2980b9;
+	color: #00ffff;
 }
 
 button.auth-button {

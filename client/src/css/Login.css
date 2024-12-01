@@ -1,54 +1,104 @@
-/* Overall container for the login page */
-.app-container {
-	display: flex;
-	flex-direction: row;
-	min-height: 100vh;
-}
-
 a {
 	text-decoration: none;
 }
 
-/* Styling for the login form */
-.login-form {
+.formWrapper {
+	background-color: #011633;
+	flex: 1;
+	box-shadow: 0px 0px 15px #2c3e50;
 	display: flex;
-	flex-direction: column;
-	justify-content: center;
 	align-items: center;
+	justify-content: center;
+}
+
+.formWrapper h1 {
+	color: #6193bf;
+	text-shadow: -1px 1px 5px #2980b9;
+	padding: 10px;
+}
+/* Form container */
+form {
+	width: 400px;
+	margin: auto;
 	padding: 20px;
-	flex-grow: 1;
-	background-color: #f4f4f4; /* Light gray background */
+	background: rgba(0, 0, 0, 0.8);
+	border-radius: 8px;
+	box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.3);
 }
 
-.login-form h2 {
-	color: #333; /* Dark gray color for the text */
-	margin-bottom: 20px;
+/* Form labels */
+form label {
+	display: block;
+	color: #b0c4de;
+	font-weight: bold;
+	margin-bottom: 5px;
 }
 
-.login-form input[type='text'],
-.login-form input[type='password'] {
-	width: 80%; /* Relative width to the parent container */
+/* Input fields */
+form input[type='email'],
+form input[type='password'] {
+	width: 100%;
 	padding: 10px;
-	margin-bottom: 15px;
-	border: 2px solid #ccc; /* Light gray border */
-	border-radius: 4px; /* Rounded borders */
-	font-size: 16px; /* Larger font size for better readability */
+	border: 1px solid #6193bf;
+	border-radius: 5px;
+	background: #1a1a1a;
+	color: #f0f0f0;
+	font-size: 14px;
 }
 
-.login-form button {
-	width: 80%;
+/* Input focus state */
+form input[type='email']:focus,
+form input[type='password']:focus {
+	outline: none;
+	border-color: #2980b9;
+	box-shadow: 0px 0px 5px #00bfff;
+}
+
+/* Submit button */
+form button {
+	width: 100%;
 	padding: 10px;
-	font-size: 16px;
-	color: white;
-	background-color: #4caf50; /* Green background for the button */
+	background-color: #00bfff;
 	border: none;
-	border-radius: 4px;
+	border-radius: 5px;
+	color: #ffffff;
+	font-weight: bold;
+	font-size: 16px;
 	cursor: pointer;
-	transition: background-color 0.3s ease;
+	transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-.login-form button:hover {
-	background-color: #45a049; /* Darker shade of green for hover effect */
+/* Submit button hover state */
+form button:hover {
+	color: black;
+	background: #00ffff;
+}
+
+/* Submit button focus state */
+form button:focus {
+	outline: none;
+	box-shadow: 0px 0px 5px #00ffff;
+}
+
+/* Adjust spacing between input fields */
+form div {
+	margin-bottom: 15px;
+}
+
+h4 {
+	color: #6193bf;
+	text-shadow: -1px 1px 15px #2980b9;
+	padding: 10px;
+}
+
+h4 a {
+	color: #03ade6;
+	text-shadow: -1px 1px 15px #297fb9a5;
+	transition: color 0.3s ease;
+}
+
+h4 a:hover {
+	color: #00ffff;
 }
 
 /* Responsive adjustments can be added if needed */

@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import logo from '../css/VeggieLogo.png';
+import bg from '../css/photobg.mp4';
+import '../css/Signup.css';
 
 const Register = () => {
 	const [formData, setFormData] = useState({
@@ -49,53 +52,79 @@ const Register = () => {
 	};
 
 	return (
-		<div>
-			<h1>Register</h1>
-			{error && <div style={{ color: 'red' }}>{error}</div>}
-			{success && <div style={{ color: 'green' }}>{success}</div>}
-			<form onSubmit={onSubmit}>
-				<div>
-					<label>Username</label>
-					<input
-						type='text'
-						name='username'
-						value={username}
-						onChange={onChange}
-						required
-					/>
+		<div className='app-container'>
+			<video className='video-background' autoPlay muted loop>
+				<source src={bg} type='video/mp4' />
+				Your browser does not support the video tag.
+			</video>
+
+			<nav className='navbar'>
+				<a className='logoDiv' href='/'>
+					<div className='navbar-logo'>
+						<img src={logo} alt='Veggie Logo' />
+					</div>
+					<h1>VEGA AI</h1>
+				</a>
+				<div className='auth'>
+					<ul>
+						<a href='/'>Chat</a>
+						<a href='/register'>Signup</a>
+					</ul>
 				</div>
+			</nav>
+
+			<div className='formWrapper'>
 				<div>
-					<label>Email</label>
-					<input
-						type='email'
-						name='email'
-						value={email}
-						onChange={onChange}
-						required
-					/>
+					<h1>Register</h1>
+					<form onSubmit={onSubmit}>
+						<div>
+							<label>Username</label>
+							<input
+								type='text'
+								name='username'
+								value={username}
+								onChange={onChange}
+								required
+							/>
+						</div>
+						<div>
+							<label>Email</label>
+							<input
+								type='email'
+								name='email'
+								value={email}
+								onChange={onChange}
+								required
+							/>
+						</div>
+						<div>
+							<label>Password</label>
+							<input
+								type='password'
+								name='password'
+								value={password}
+								onChange={onChange}
+								required
+							/>
+						</div>
+						<div>
+							<label>Date of Birth</label>
+							<input
+								placeholder='MM/DD/YYYY'
+								type='date'
+								name='dob'
+								value={dob}
+								onChange={onChange}
+								required
+							/>
+						</div>
+						<button type='submit'>Register</button>
+					</form>
+					<h4>
+						Already register? Click here to <a href='/login'>Login</a>
+					</h4>
 				</div>
-				<div>
-					<label>Password</label>
-					<input
-						type='password'
-						name='password'
-						value={password}
-						onChange={onChange}
-						required
-					/>
-				</div>
-				<div>
-					<label>Date of Birth</label>
-					<input
-						type='date'
-						name='dob'
-						value={dob}
-						onChange={onChange}
-						required
-					/>
-				</div>
-				<button type='submit'>Register</button>
-			</form>
+			</div>
 		</div>
 	);
 };
