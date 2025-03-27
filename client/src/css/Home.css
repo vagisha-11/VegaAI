@@ -20,10 +20,10 @@ body {
 }
 
 .app-container {
+	position: relative;
 	display: flex;
 	flex-direction: column;
-	max-height: 100vh;
-	height: 100vh;
+	min-height: 100vh;
 	background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
 }
 
@@ -99,6 +99,10 @@ body {
 	text-align: center;
 }
 
+.auth a {
+	cursor: pointer;
+}
+
 .auth ul {
 	display: flex;
 	justify-content: center;
@@ -132,7 +136,7 @@ button.auth-button {
 /* History Section */
 .history {
 	min-width: 22%;
-	height: 100%;
+	/* height: 100%; */
 	display: flex;
 	flex-direction: column;
 	background: linear-gradient(to bottom, #001e45, #003973);

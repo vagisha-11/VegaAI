@@ -14,7 +14,10 @@ const app = express();
 app.use(cookieParser());
 
 const corsOptions = {
-	origin: 'https://vega-ai-theta.vercel.app', // Your frontend URL
+	origin:
+		process.env.NODE_ENV === 'production'
+			? 'https://vega-ai-theta.vercel.app' // Production frontend URL
+			: 'http://localhost:3000', // Development frontend URL
 	credentials: true, // Allow cookies to be sent with requests
 };
 app.use(cors(corsOptions));
@@ -27,7 +30,7 @@ app.use(
 	(req, res, next) => {
 		try {
 			req.body = JSON.parse(req.body); // Manually parse the text into JSON
-			next(); // Pass to the next middleware (your /save-history route handler)
+			next(); // Pass to the next middleware
 		} catch (error) {
 			res.status(400).json({ error: 'Invalid JSON format' });
 		}
@@ -38,7 +41,10 @@ app.use(
 const server = http.createServer(app);
 const io = new Server(server, {
 	cors: {
-		origin: 'https://vega-ai-theta.vercel.app',
+		origin:
+			process.env.NODE_ENV === 'production'
+				? 'https://vega-ai-theta.vercel.app' // Production frontend URL
+				: 'http://localhost:3000', // Development frontend URL
 	},
 });
 
@@ -89,7 +95,7 @@ app.use('/api/chat', chatRoutes);
 app.use('/api/auth', authRoutes);
 
 // Start the server
-const PORT = process.env.PORT || 5000;
+const PORT = 5000;
 server.listen(PORT, () => {
 	console.log(`Server running on port ${PORT}`);
 });

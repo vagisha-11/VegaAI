@@ -7,7 +7,7 @@ const mongoose = require('mongoose');
 const User = require('../models/user'); // User model
 const authLogin = require('../middleware/authToken');
 
-// ======================== CONFIGURATION ========================
+// Configure
 
 // JWT secret key
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
@@ -21,7 +21,7 @@ mongoose
 	.then(() => console.log('MongoDB connected'))
 	.catch((err) => console.error('MongoDB connection error:', err));
 
-// ======================== ROUTES ========================
+// Routes
 
 // Register a new user
 router.post(
@@ -72,9 +72,11 @@ router.post(
 			res.cookie('token', token, {
 				httpOnly: true, // Ensure cookie is not accessible via JavaScript
 				secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
-				sameSite: 'None',
+				sameSite: 'Lax',
 				maxAge: 3 * 60 * 60 * 1000, // Cookie expires in 3 hours
 			});
+
+			console.log('Token:', token);
 
 			res.status(200).json({ msg: 'User registered successfully' });
 		} catch (err) {
@@ -120,9 +122,11 @@ router.post(
 			res.cookie('token', token, {
 				httpOnly: true,
 				secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
-				sameSite: 'None',
+				sameSite: 'Lax',
 				maxAge: 3 * 60 * 60 * 1000, // Cookie expires in 3 hours
 			});
+
+			console.log('Token:', token);
 
 			res.status(200).json({ msg: 'Login successful' });
 		} catch (err) {
@@ -142,10 +146,9 @@ router.post('/logout', (req, res) => {
 	res.clearCookie('token', {
 		httpOnly: true,
 		secure: true,
-		sameSite: 'none',
+		sameSite: 'Lax',
 	});
 	res.status(200).json({ msg: 'Logged out successfully' });
 });
 
-// ======================== EXPORT ========================
 module.exports = router;

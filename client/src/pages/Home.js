@@ -28,6 +28,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 
 function Home() {
+	// States
 	const [question, setQuestion] = useState('');
 	const [conversation, setConversation] = useState([]);
 	const [loading, setLoading] = useState(false);
@@ -39,6 +40,7 @@ function Home() {
 	const [chatSessions, setChatSessions] = useState([]);
 	const [selectedSessionHistory, setSelectedSessionHistory] = useState([]);
 
+	// Refs
 	const fileInputRef = useRef(null);
 	const chatEndRef = useRef(null);
 	const chatHistoryRef = useRef([]);
@@ -48,19 +50,22 @@ function Home() {
 		resetTranscript,
 		browserSupportsSpeechRecognition,
 	} = useSpeechRecognition();
-	const backendUrl = 'https://vegaai.onrender.com/api/chat';
 
+	// Backend URL
+	const backendUrl =
+		process.env.NODE_ENV === 'production'
+			? 'https://vegaai.onrender.com/api'
+			: 'http://localhost:5000/api';
+
+	// Function to fetch chat sessions
 	useEffect(() => {
 		const fetchChatSessions = async () => {
 			if (isLoggedIn) {
 				try {
-					const response = await fetch(
-						'https://vegaai.onrender.com/api/chat/history',
-						{
-							method: 'GET',
-							credentials: 'include',
-						}
-					);
+					const response = await fetch(backendUrl + '/chat/history', {
+						method: 'GET',
+						credentials: 'include',
+					});
 
 					if (response.ok) {
 						const data = await response.json();
@@ -76,15 +81,13 @@ function Home() {
 		fetchChatSessions();
 	}, [isLoggedIn]);
 
+	// Function to fetch session history
 	const fetchSessionHistory = async (sessionId) => {
 		try {
-			const response = await fetch(
-				`https://vegaai.onrender.com/api/chat/history/${sessionId}`,
-				{
-					method: 'GET',
-					credentials: 'include',
-				}
-			);
+			const response = await fetch(backendUrl + `/chat/history/${sessionId}`, {
+				method: 'GET',
+				credentials: 'include',
+			});
 
 			if (response.ok) {
 				const data = await response.json();
@@ -97,6 +100,7 @@ function Home() {
 		}
 	};
 
+	// Function to start and stop listening
 	const startListening = () => {
 		SpeechRecognition.startListening({ continuous: true });
 	};
@@ -107,10 +111,12 @@ function Home() {
 		resetTranscript();
 	};
 
+	// Function to push history
 	const pushHistory = (role, message) => {
 		chatHistoryRef.current.push({ role, parts: [{ text: message }] });
 	};
 
+	// Function to ask question, fetch response and update conversation history
 	const askQuestion = async (trimmedQuestion) => {
 		setLoading(true);
 		setConversation((prev) => [
@@ -124,21 +130,23 @@ function Home() {
 		if (file) formData.append('file', file);
 
 		try {
-			const response = await fetch(backendUrl, {
+			const response = await fetch(backendUrl + '/chat', {
 				method: 'POST',
 				body: formData,
-				credentials: 'include',
+				credentials: 'include', // Send cookies for authentication
 			});
 
 			if (!response.ok)
 				throw new Error(`HTTP error! Status: ${response.status}`);
 
+			// Reading streamed response chunk by chunk
 			const reader = response.body.getReader();
-			const decoder = new TextDecoder();
+			const decoder = new TextDecoder(); // decodes bytes into strings
 			let responseText = '';
 			let done = false;
 			let firstChunkReceived = false;
 
+			// Simulate typing effect
 			const simulateTyping = async (text) => {
 				for (let i = 0; i < text.length; i++) {
 					responseText += text[i];
@@ -188,6 +196,7 @@ function Home() {
 		}
 	};
 
+	// Function to extract code blocks from text
 	const extractCodeBlocks = (text) => {
 		const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g;
 		const parts = [];
@@ -212,6 +221,7 @@ function Home() {
 		return parts;
 	};
 
+	// Function to speak out loud
 	const speakOutLoud = (text) => {
 		const synth = window.speechSynthesis;
 		const utterance = new SpeechSynthesisUtterance(text);
@@ -219,6 +229,7 @@ function Home() {
 		synth.speak(utterance);
 	};
 
+	// Function to handle textarea resize
 	const handleTextareaResize = (textarea) => {
 		const lineHeight = 30;
 		const maxLines = 4;
@@ -231,6 +242,7 @@ function Home() {
 		textarea.style.height = `${baseHeight + (lines - 1) * lineHeight}px`;
 	};
 
+	// Function to change the file input
 	const handleFileChange = (e) => {
 		const uploadedFile = e.target.files[0];
 		const validTypes = [
@@ -275,16 +287,14 @@ function Home() {
 		else alert('Please enter a question.');
 	};
 
+	// Checking login status on loading the page
 	useEffect(() => {
 		const checkLoginStatus = async () => {
 			try {
-				const response = await fetch(
-					'https://vegaai.onrender.com/api/auth/check-login',
-					{
-						method: 'GET',
-						credentials: 'include',
-					}
-				);
+				const response = await fetch(backendUrl + '/auth/check-login', {
+					method: 'GET',
+					credentials: 'include',
+				});
 
 				if (response.ok) {
 					const data = await response.json();
@@ -303,12 +313,13 @@ function Home() {
 		checkLoginStatus();
 	}, []);
 
+	// Saving chat history on page unload
 	useEffect(() => {
 		const handleBeforeUnload = (e) => {
 			const historyToSave = chatHistoryRef.current;
 			if (historyToSave.length > 0) {
 				navigator.sendBeacon(
-					'https://vegaai.onrender.com/api/chat/save-history',
+					backendUrl + '/chat/save-history',
 					JSON.stringify({ history: historyToSave })
 				);
 			}
@@ -319,13 +330,10 @@ function Home() {
 
 	const handleLogout = async () => {
 		try {
-			const response = await fetch(
-				'https://vegaai.onrender.com/api/auth/logout',
-				{
-					method: 'POST',
-					credentials: 'include',
-				}
-			);
+			const response = await fetch(backendUrl + '/auth/logout', {
+				method: 'POST',
+				credentials: 'include',
+			});
 
 			if (response.ok) {
 				setIsLoggedIn(false);

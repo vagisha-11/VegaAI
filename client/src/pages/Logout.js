@@ -2,6 +2,12 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+// Backend URL
+const backendUrl =
+	process.env.NODE_ENV === 'production'
+		? 'https://vegaai.onrender.com/api'
+		: 'http://localhost:5000/api';
+
 const Logout = () => {
 	const navigate = useNavigate();
 
@@ -9,13 +15,10 @@ const Logout = () => {
 		const logoutUser = async () => {
 			try {
 				// Make the POST request to the logout endpoint using fetch
-				const response = await fetch(
-					'https://vegaai.onrender.com/api/auth/logout',
-					{
-						method: 'POST',
-						credentials: 'include', // Include cookies to clear the JWT token stored as a cookie
-					}
-				);
+				const response = await fetch(backendUrl + '/auth/logout', {
+					method: 'POST',
+					credentials: 'include', // Include cookies to clear the JWT token
+				});
 
 				if (response.ok) {
 					navigate('/login'); // Redirect to login page after successful logout
@@ -27,7 +30,7 @@ const Logout = () => {
 			}
 		};
 
-		logoutUser(); // Call the logout function when component mounts
+		logoutUser();
 	}, [navigate]);
 
 	return (

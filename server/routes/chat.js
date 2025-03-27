@@ -94,7 +94,7 @@ const generateResponse = async (question, fileContent, res) => {
 	}
 };
 
-// ======================== ROUTES ========================
+// Routes
 
 // POST: Handle chat with AI and file upload
 router.post('/', authLogin, upload.single('file'), async (req, res) => {
@@ -150,6 +150,7 @@ router.post('/save-history', authLogin, async (req, res) => {
 // GET: Fetch all chat history sessions
 router.get('/history', authLogin, async (req, res) => {
 	const userId = req.user.id;
+	console.log('User ID:', userId);
 
 	try {
 		const userChatHistory = await ChatHistory.find({ userId })
@@ -186,5 +187,4 @@ router.get('/history/:sessionId', authLogin, async (req, res) => {
 	}
 });
 
-// ======================== EXPORT ========================
 module.exports = router;

@@ -4,6 +4,12 @@ import logo from '../css/VeggieLogo.png';
 import bg from '../css/photobg.mp4';
 import '../css/Login.css';
 
+// Backend URL
+const backendUrl =
+	process.env.NODE_ENV === 'production'
+		? 'https://vegaai.onrender.com/api'
+		: 'http://localhost:5000/api';
+
 const Login = () => {
 	const [formData, setFormData] = useState({
 		email: '',
@@ -20,17 +26,14 @@ const Login = () => {
 	const onSubmit = async (e) => {
 		e.preventDefault();
 		try {
-			const response = await fetch(
-				'https://vegaai.onrender.com/api/auth/login',
-				{
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-					},
-					credentials: 'include', // Ensure cookies are included in the request
-					body: JSON.stringify(formData),
-				}
-			);
+			const response = await fetch(backendUrl + '/auth/login', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				credentials: 'include', // Ensure cookies are included in the request
+				body: JSON.stringify(formData),
+			});
 
 			const data = await response.json();
 
